@@ -124,7 +124,8 @@ if True:
     plt.semilogy(x, B, label=f"B with k={da_k}")
     plt.ylabel("pdf")
     plt.xlabel("x")
-    plt.xlim(-5, 15)
+    plt.xlim(-1.5, 11)
+    plt.ylim(1e-35, 2e-1)
     plt.legend()
     plt.show()
 
@@ -161,6 +162,7 @@ if True:
     plt.ylabel("eps")
     plt.ylim(0, 60)
     plt.legend()
+
     plt.show()
 
 
