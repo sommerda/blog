@@ -31,7 +31,7 @@ def compute_epsilon(steps, k, N, noise_multiplier, B, target_delta=1e-5):
     q = 1 - hypergeom.cdf(0, N, k, B)  # This is a vast overapproximation!
     rdp = compute_rdp(
         q=q,
-        # our sensitivity is not 1 but j*1. We scale the x-axis accoridngly by dividing the noise_multiplier by k
+        # our sensitivity is not 1 but k*1. We scale the x-axis accordingly by dividing the new_noise_multiplier by k
         noise_multiplier=noise_multiplier / k,
         steps=steps,
         orders=orders)
