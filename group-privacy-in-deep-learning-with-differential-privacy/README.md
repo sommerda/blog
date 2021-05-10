@@ -77,7 +77,7 @@ Pr[s_1 or s_2 in B but not both] = 2 * (B / N) * [1 - B/(N-1)]
 and the probability of including none is corresponding,
 ```
 Pr[neither s_1 nor s_2 in B] = 1 - Pr[s_1 or s_2 in B but not both] - Pr[s_1 and s_2 in B] 
-                             = [1 - B/(N-1)] * [1 - (B-1)/(N-2)]
+                             = [1 - B/N] * [1 - (B-1)/(N-1)]
 ```
 
 For arbitrary k, this problem is equivalent to drawing exactly j samples possessing a binary attribute with a total of B draws from a population of total N samples from which k samples possess that binary attribute. This is a typical "urn problem" in combinatorics, described by the hypergeometric distribution ([Wikipedia](https://en.wikipedia.org/wiki/Hypergeometric_distribution)). Its probability mass function reads
