@@ -159,11 +159,11 @@ def compute_epsilon(steps, k, N, new_noise_multiplier, B, target_delta=1e-5):
     orders = [1 + x / 10. for x in range(1, 100)] + list(range(12, 64))
     q = 1 - hypergeom.cdf(0, N, k, B)  # This is a vast overapproximation!
     rdp = compute_rdp(
-    	q=q,
-    	# our sensitivity is not 1 but j*1. We scale the x-axis accoridngly by dividing the new_noise_multiplier by k
-        noise_multiplier=new_noise_multiplier / k,
-        steps=steps,
-        orders=orders)
+      q=q,
+      # our sensitivity is not 1 but k*1. We scale the x-axis accordingly by dividing the new_noise_multiplier by k
+      noise_multiplier=new_noise_multiplier / k,
+      steps=steps,
+      orders=orders)
     # Delta is set to 1e-5 because MNIST has 60000 training points.
     return get_privacy_spent(orders, rdp, target_delta=target_delta)[0]
 ```
