@@ -1,6 +1,6 @@
 # Group Privacy for Deep Learning with Differential Privacy
 
-Recently, I wanted to analyze the effect when multiple data samples are protected differentially private by the noise adding mechanism in moments accountant [1]. Surprisingly, I was not able to find this case in the literature. Maybe I missed it. In the end, I derived the required insights on my own, and I will share them here with a focus on implementation. The examples will be presented with [tensorflow privacy](https://github.com/tensorflow/privacy). The results, however, apply to any other framework as well. If anyone already published the same ideas, I apologize. 
+Recently, I wanted to analyze the effect when multiple data samples are protected differentially private by the noise adding mechanism in moments accountant [1]. Surprisingly, I was not able to find this case in the literature. Maybe I missed it. In the end, I derived the required insights on my own, and I will share them here with a focus on implementation. The examples will be presented with [TensorFlow privacy](https://github.com/tensorflow/privacy). The results, however, apply to any other framework as well. If anyone already published the same ideas, I apologize. 
 
 I will start with a short introduction to the problem and will extend the current state of literature with my insights. The target audience is supposed to be familiar with the differentially private stochastic gradient descent algorithm and differential privacy. 
 
@@ -77,7 +77,7 @@ Pr[s_1 or s_2 in B but not both] = 2 * (B / N) * [1 - B/(N-1)]
 and the probability of including none is corresponding,
 ```
 Pr[neither s_1 nor s_2 in B] = 1 - Pr[s_1 or s_2 in B but not both] - Pr[s_1 and s_2 in B] 
-                             = [1 - B/(N-1)] * [1 - (B-1)/(N-2)]
+                             = [1 - B/N] * [1 - (B-1)/(N-1)]
 ```
 
 For arbitrary k, this problem is equivalent to drawing exactly j samples possessing a binary attribute with a total of B draws from a population of total N samples from which k samples possess that binary attribute. This is a typical "urn problem" in combinatorics, described by the hypergeometric distribution ([Wikipedia](https://en.wikipedia.org/wiki/Hypergeometric_distribution)). Its probability mass function reads
@@ -225,7 +225,7 @@ First, an example of such two worst-case distributions with k=5 and sigma = 0.1 
 
 ![worst-case distributions for k=5, sigma=0.1](worst-case-distributions.png "worst-case distributions for k=5, sigma=0.1")
 
-Here, a comparison between the first method using Renyi-moments and Moments Accountant (RDP-method) and the Privacy Bucket evaluation (PB-method) for sigma=1. For the over-approximating method (RDP-method), lines for k=5 start higher than the plotting area. A typical MNIST example is trained with 2**12 - 2**14 compositions. 
+Here, a comparison between the first method using Renyi-moments and Moments Accountant (RDP-method) and the Privacy Bucket evaluation (PB-method) for sigma=1. For the over-approximating method (RDP-method), lines for k=5 start higher than the plotting area. A typical MNIST example is trained with 2^12 - 2^14 compositions. 
 
 ![eps_over_compositionsfor k=5, sigma=0.1](eps_over_compositions.png  "eps over compositions")
 
