@@ -42,7 +42,7 @@ where q is the sampling probability that a data sample is contained in the proce
 
 The intuition behind the A-B-reduction is the following: The contribution of a single sample cannot exceed C, because we clip them accordingly. The spherical symmetry of the added Gaussian noise allows us to rotate any gradient updates to a 1D axis spherically. 
 
-Dataset D that does not contain the data sample will produce distribution A. The dataset D' that contains the sample will most likely produce A as well (with probability (1-q)) as the sample is only sampled for the processed batch with probability q. If it is sampled, it will produce *maximally* N(C, sigma) with probability q. As the added noise is monotonically falling from the center, any contribution C' < C of a data sample will lead to a larger overlap of the two distributions N(0, sigma) and N(C', sigma), and therefore induce less privacy leakage. 
+Dataset D that does not contain the data sample will produce distribution A. The dataset D' that contains the sample will most likely produce A as well (with probability (1-q)) as the sample is only sampled for the processed batch with probability q. If it is sampled, it will produce *maximally* N(C, sigma) with probability q. As the added noise is monotonically falling from the center, any contribution C' < C of a data sample will lead to a larger overlap of the two distributions N(0, sigma) and N(C', sigma), and therefore induces less privacy leakage. 
 
 This method is called 'sub-sampling' in literature. Different sampling methods than Poisson sampling have been examined as well, e.g., in [4].
 
@@ -60,7 +60,7 @@ The DP-SGD algorithm itself we do not need to change. But we need to enlarge the
 
 ### The privacy analysis
 
-Here, it gets tricky. We need to extend the worst-case distributions A and B accordingly. And we need to argue that the resulting distributions are actually worst-case. Moreover, the impact of the chosen sampling method grows. We cannot consider pure Poisson subsampling as we cannot draw the same protected sample twice within a single batch. We need to include sampling without replacement within a batch. Multiple batches are sampled with replacement, i.e., the population is reset again after a full batch is drawn.
+Here, it gets tricky. We need to extend the worst-case distributions A and B accordingly. And we need to argue that the resulting distributions are actually worst-case. Moreover, the impact of the chosen sampling method grows. We cannot consider pure Poisson subsampling aynmore as we cannot draw the same protected sample twice within a single batch. We need to consider sampling without replacement when drawing samples for a single batch. Multiple batches are sampled with replacement, i.e., the population is reset again after a full batch is drawn.
 
 As a start, we examine the case k=2, i.e., protecting two samples. Assume we want to protect samples s_1 and s_2 (which are arbitrary, we want to cover all of them simultaneously). For a batch with batch size B and the total number of samples N:
 
@@ -80,13 +80,13 @@ Pr[neither s_1 nor s_2 in B] = 1 - Pr[s_1 or s_2 in B but not both] - Pr[s_1 and
                              = [1 - B/N] * [1 - (B-1)/(N-1)]
 ```
 
-For arbitrary k, this problem is equivalent to drawing exactly j samples possessing a binary attribute with a total of B draws from a population of total N samples from which k samples possess that binary attribute. This is a typical "urn problem" in combinatorics, described by the hypergeometric distribution ([Wikipedia](https://en.wikipedia.org/wiki/Hypergeometric_distribution)). Its probability mass function reads
+For arbitrary k, this problem is equivalent to drawing exactly j samples possessing a binary attribute with a total of B draws from a population of total N samples from which k samples possess that binary attribute. This is a typical "urn problem" in combinatorics, described by the hypergeometric distribution ([Wikipedia](https://en.wikipedia.org/wiki/Hypergeometric_distribution)). Its probability mass function (pmf) reads
 ```
 pmf(j,k,B,N) = (k over j) * ( N - k over B - j) / ( N over B )
 ```
 where (a over b) denotes the binomial coefficient. 
 
-How do we now construct worst-case distributions with this knowledge? Well, with probability pmf(0,k,B,N), we do not have a single critical sample in the batch. With probability pmf(1,k,B,N), the critical samples can maximally divert the gradient update by C. With probability pmf(2,k,B,N), it is 2C, with pmf(3,k,B,N) it is 3C and so forth. The Gaussian noise we add is monotonically decreasing from the center, meaning any combination of j samples included in the batch which influence the gradient with C' < j\*C incur less privacy leakage than the maximal deviation of j\*C. This leads to the following worst-case distributions:
+How do we now construct worst-case distributions with this knowledge? Well, with probability pmf(0,k,B,N), we do not have a single critical sample in the batch. With probability pmf(1,k,B,N), the critical samples can maximally divert the gradient update by C. With probability pmf(2,k,B,N), it is 2C, with pmf(3,k,B,N) it is 3C and so forth. The Gaussian noise we add is monotonically decreasing from the center, meaning any combination of j samples included in the batch which influence the gradient with C' < j\*C induce less privacy leakage than the maximal deviation of j\*C. This leads to the following worst-case distributions:
 
 ```
 A = N(0, sigma)
@@ -109,7 +109,7 @@ Python code illustrating the proposed methods and generating the plots can be fo
 
 ### The I-am-using-keras-and-just-want-group-privacy-without-thinking method
 
-If you have a working algorithm and want to include group privacy without fine-tuning a lot, you can switch a few lines of code and get your group privacy. However, this is a vast over-approximation resulting in quickly decreasing utility, even with small k.
+If you have a working algorithm and want to include group privacy without fine-tuning, you can switch a few lines of code and get your group privacy. However, this is a vast over-approximation resulting in quickly decreasing utility, even with small k.
 
 We need to increase the noise we add. Following our intuition, k samples in our batch can maximally impact the gradients by k\*C. To protect this accordingly, we just add k times more noise than with k=1. Of course, one could do a more advanced privacy analysis and set the noise_multiplier accordingly (most likely lower than k\*noise_multiplier). Note that noise_multiplier = sigma / C.
 
@@ -141,7 +141,7 @@ A = N(0, sigma)
 B = (1-q) * N(0, sigma) + q * N(C, sigma)
 ```
 
-The sensitivity is implicitly set to 1, not to the clipping constant C. This is the reason the 'relative noise'-sigma is used and then scaled up to C during training. We can bring our problem to the same shape by shifting all occurrences of combinations j at sensitivity j\*C to k\*C. This gives us 
+The sensitivity is implicitly set to 1, not to the clipping constant C. This is the reason the 'relative noise'-sigma is used in TensorFlow privacy and then scaled up to C during training. We can bring our problem to the same shape by shifting all occurrences of combinations j at sensitivity j\*C to k\*C. This gives us 
 
 ```
 q = sum_{j=1}^k hypergeom.pmf(j,k,B,N) = 1 - hypergeom.cdf(0,k,B,N)
@@ -221,11 +221,11 @@ Privacy buckets can also provide Renyi-moments, if anyone intends to use moments
 
 Using the proposed numerical methods, I generated a few plots, all with C=1. The numbers are inspired by a typical DP-SGD trained classifier for MNIST. The code for the plots you can find [here](plots.py).
 
-First, an example of such two worst-case distributions with k=5 and sigma = 0.1 for illustration purposes. Warning: do not use a sigma of 0.1 in your DP-SGD algorithm unless you know what you do!
+First, an example of such two worst-case distributions with k=5 and sigma = 0.1 for illustration purposes. *Warning:* do not use a sigma of 0.1 in your DP-SGD algorithm unless you know what you do!
 
 ![worst-case distributions for k=5, sigma=0.1](worst-case-distributions.png "worst-case distributions for k=5, sigma=0.1")
 
-Here, a comparison between the first method using Renyi-moments and Moments Accountant (RDP-method) and the Privacy Bucket evaluation (PB-method) for sigma=1. For the over-approximating method (RDP-method), lines for k=5 start higher than the plotting area. A typical MNIST example is trained with 2^12 - 2^14 compositions. 
+Here, a comparison between the first method using Renyi-moments and Moments Accountant (RDP-method) and the Privacy Bucket evaluation (PB-method) for sigma=1. Target delta is 10^-5. For the over-approximating method (RDP-method), lines for k=5 start higher than the plotting area. A typical MNIST example is trained with 2^12 - 2^14 compositions. 
 
 ![eps_over_compositionsfor k=5, sigma=0.1](eps_over_compositions.png  "eps over compositions")
 
