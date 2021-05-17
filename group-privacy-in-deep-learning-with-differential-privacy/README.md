@@ -54,7 +54,9 @@ Conceptionally, we can distinguish between *record-level privacy* -- the protect
 
 The DP-SGD algorithm can be extended to user-level privacy by first averaging all gradients of a single user (in a training batch) and then do the clipping. This is found, for example, in differentially private federated learning that applies clipping to the (already averaged) gradients returned from their clients. Such techniques could be "simulated" locally, e.g., by sampling users instead of training samples. However, this requires an enormous data-set as the contribution of a single user (potentially composed from hundreds of data points) has the same impact as a single training sample in standard DP-SDG.  
 
-The method I am going to propose protects k samples in the training set using classical DP-SDG with an extended privacy analysis. While this is *group privacy* by definition, the method can also provide user-level privacy if no user has more than k samples. However, the simulated federated learning approach that clips user contributions after averaging might deliver better results for user-level privacy if the training data-set is large enough.
+The method I am going to propose protects k samples in the training set using classical DP-SDG with an extended privacy analysis. While this is group privacy by definition, the method can also provide user-level privacy if no user has more than k samples. However, the simulated federated learning approach that clips user contributions after averaging might deliver better results for user-level privacy if the training data-set is large enough. 
+
+Group privacy becomes especially interesting in combination with user-level privacy where the contribution of multiple users needs to be protected (against). There, a "user-level" averaged gradient could be clipped and combined with the group privacy extension illustrated in the next section. 
 
 ## How to extend DP-SGD to protect k samples
 
