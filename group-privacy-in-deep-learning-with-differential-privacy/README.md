@@ -48,6 +48,14 @@ This method is called 'sub-sampling' in literature. Different sampling methods t
 
 Moments accountant [1,5] utilizes Renyi-divergences between these two worst-case distributions to bound the approximate-differential-privacy leakage (see [3]) of DP-SGD. I have shown in my work that there are tighter approximation methods that eventually add less devastating noise for the same privacy parameters [2]. Later in this post, I will apply the numerical tool ([Privacy Buckets](https://github.com/sommerda/privacybuckets)) based on [2,6] to obtain a numerical privacy analysis. 
 
+### Record vs user level privacy
+
+Conceptionally, we can distinguish between *record-level privacy* -- the protection of a single training sample -- and *user-level privacy*, i.e., the accumulated impact of all a user's training samples is reasonably deniable. The previously described DP-SGD algorithm provides record-level privacy: it protects only one training sample; users contributing more than one sample might leave undeniable traces in the trained algorithm.  
+
+The DP-SGD algorithm can be extended to user-level privacy by first averaging all gradients of a single user (in a training batch) and then do the clipping. This is found, for example, in differentially private federated learning that applies clipping to the (already averaged) gradients returned from their clients. Such techniques could be "simulated" locally, e.g., by sampling users instead of training samples. However, this requires an enormous data-set as the contribution of a single user (potentially composed from hundreds of data points) has the same impact as a single training sample in standard DP-SDG.  
+
+The method I am going to propose protects k samples in the training set using classical DP-SDG with an extended privacy analysis. It can provide user-level privacy if no user has more than k samples. However, the simulated federated learning approach that clips user contributions after averaging might deliver better results if the training data-set is large enough.
+
 ## How to extend DP-SGD to protect k samples
 
 Using the intuition from the previous section, I will derive a method to incorporate the protection of multiple samples. There are two key factors. First, we need to add broader noise to blur multiple contributions during training. Second, we need to extend the privacy analysis. I will present a tight analyzing method to obtain a suitable noise width sigma that requires additional tools. And I will provide an over-approximation compatible with the privacy leakage estimation tools available with TensorFlow privacy. 
